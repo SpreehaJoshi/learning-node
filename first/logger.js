@@ -1,11 +1,18 @@
-//creating module
+const EventEmitter = require('events');
 
+//creating module
 var url = 'http://madethisup.com/log';
 
-function log(message){
+class Logger extends EventEmitter {
+
+log(message){ //method of class logger
     console.log(message);
+
+    //raise an event
+    this.emit('messageLogged', {id: 1, url: 'http://'});
+}
 }
 
-module.exports.log = log;
+module.exports = Logger;
 
 //module.exports = log; -> cuz there is only one function to be exported
