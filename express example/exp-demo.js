@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-import express, { response } from "express";
+import express from "express";
 const app = express();
 app.use(express.json()); //middleware
 
@@ -39,13 +39,21 @@ app.get('/api/posts/:year/:month', (req, res)=>{
 // });
 
 app.post('/api/courses', (req, res)=>{
-    const schema = {
-        name: Joy.string().min(3).required()
-    };
+    //VERIFICATION using joy -> old method
+    // const schema = {
+    //     name: Joy.string().min(3).required()
+    // };
 
-    const result = Joi.validate(req.body, schema);
+    // const result = Joi.validate(req.body, schema);
+
     //console.log(result);
-    
+
+    // if (result.error){
+    //      //400 -> bad request
+    //      res.status(400).send(result.error.details[0].message);
+    //     return;
+    //  }
+
     //INPUT verification
     // if (!req.body.name || req.body.name.length < 3){
     //     //400 -> bad request
@@ -53,11 +61,13 @@ app.post('/api/courses', (req, res)=>{
     //     return;
     // }
 
-    if (result.error){
-         //400 -> bad request
+    //verification using joy -> new method
+    const { error } = validateCourse(req.body); //same as result.error -> object destructuring
+
+    if (error){
          res.status(400).send(result.error.details[0].message);
         return;
-     }
+    }
 
     const course = {
         id: courses.length + 1,
@@ -67,5 +77,34 @@ app.post('/api/courses', (req, res)=>{
     res.send(course); //returns new obj to client
 });
 
+//http put
+app.put('/api/courses/:id', (req, res)=>{
+    //look up course. if doesnt exist return 404.
+    const course = courses.find(c => c.id === parseInt(req.params.id));
+    if(!course) res.status(404).send('Course with given ID was not found');
+
+    //valdiate. if invalid return 400 - bad request.
+    //const result = validateCourse(req.body);
+    const { error } = validateCourse(req.body); //same as result.error -> object destructuring
+
+    if (error){
+         res.status(400).send(result.error.details[0].message);
+        return;
+    }
+
+     //update course
+    course.name = req.body.name;
+
+    //return updated course to client
+    res.send(course);
+});
+
+function validateCourse(course){
+    const schema = {
+        name: Joy.string().min(3).required()
+    };
+
+    return Joi.validate(course, schema);
+}
 
 app.listen(port, ()=> console.log(`Listening on port ${port}`));
