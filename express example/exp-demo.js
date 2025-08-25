@@ -62,9 +62,15 @@ app.post('/api/courses', (req, res)=>{
     // }
 
     //verification using joy -> new method
-    const { error } = validateCourse(req.body); //same as result.error -> object destructuring
+    //const { error } = validateCourse(req.body); //same as result.error -> object destructuring
+    const schema = Joi.object({
+        name: Joi.string().min(3).required()
+    });
 
-    if (error){
+    const result = schema.validate(req.body)
+    console.log(result);
+
+    if (result.error){
          res.status(400).send(result.error.details[0].message);
         return;
     }
@@ -80,8 +86,8 @@ app.post('/api/courses', (req, res)=>{
 //http put
 app.put('/api/courses/:id', (req, res)=>{
     //look up course. if doesnt exist return 404.
-    const course = courses.find(c => c.id === parseInt(req.params.id));
-    if(!course) res.status(404).send('Course with given ID was not found');
+    // const course = courses.find(c => c.id === parseInt(req.params.id));
+    // if(!course) res.status(404).send('Course with given ID was not found');
 
     //valdiate. if invalid return 400 - bad request.
     //const result = validateCourse(req.body);
@@ -100,11 +106,14 @@ app.put('/api/courses/:id', (req, res)=>{
 });
 
 function validateCourse(course){
-    const schema = {
-        name: Joy.string().min(3).required()
-    };
+    const schema = Joi.object({
+        name: Joi.string().min(3).required()
+    });
 
-    return Joi.validate(course, schema);
+    const result = schema.validate(req.body)
+    console.log(result);
+    //return schema.validate(course, schema);
+    return result;
 }
 
 app.listen(port, ()=> console.log(`Listening on port ${port}`));
